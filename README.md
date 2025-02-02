@@ -5,8 +5,8 @@
 1. Clone the repository:
 
    ```bash
-   git clone <repository_url>
-   cd <project_name>
+   git clone https://github.com/Anuradha-bhaskar/Semantic-Book-Recommender.git
+   cd Semantic-Book-Recommender
    ```
 
 2. Create and activate a virtual environment (recommended):
