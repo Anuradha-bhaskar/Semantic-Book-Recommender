@@ -1,0 +1,10 @@
+huggingface-hub==0.28.1
+kagglehub==0.3.7
+langchain==0.3.17
+langchain-chroma==0.2.1
+langchain-community==0.3.16
+pandas==2.2.3
+seaborn==0.13.2
+matplotlib==3.10.0
+python-dotenv==1.0.1
+transformers==4.48.2
