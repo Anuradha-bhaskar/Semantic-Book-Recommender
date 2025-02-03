@@ -8,3 +8,4 @@ seaborn==0.13.2
 matplotlib==3.10.0
 python-dotenv==1.0.1
 transformers==4.48.2
+numpy~=1.26.4
