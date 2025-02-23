@@ -26,5 +26,5 @@
 4. Run the project
 
     ```bash
-    python main.py
+    python gradio-dashboard.py
     ```
