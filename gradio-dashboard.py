@@ -1,14 +1,13 @@
 import pandas as pd
 import gradio as gr
 import numpy as np
-from dotenv import load_dotenv
 
+import os
 from langchain_community.document_loaders import TextLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_chroma import Chroma
 
-load_dotenv()
 
 books = pd.read_csv("books_with_emotions.csv")
 books["large_thumbnail"] = books["thumbnail"] + "&fife=w800"
@@ -18,11 +17,28 @@ books["large_thumbnail"] = np.where(
     books["large_thumbnail"],
 )
 
-raw_documents = TextLoader("tagged_description.csv").load()
-text_splitter = CharacterTextSplitter(chunk_size=0, chunk_overlap=0, separator="\n")
-documents = text_splitter.split_documents(raw_documents)
+
+# Path to persist ChromaDB
+persist_directory = "chroma_db"
 embeddings_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-db_books = Chroma.from_documents(documents, embedding=HuggingFaceEmbeddings(model_name=embeddings_model_name))
+# Check if embeddings already exist
+
+if not os.path.exists(persist_directory):
+    # Load and split documents
+    raw_documents = TextLoader("tagged_description.csv").load()
+    text_splitter = CharacterTextSplitter(chunk_size=0, chunk_overlap=0, separator="\n")
+    documents = text_splitter.split_documents(raw_documents)
+
+    db_books = Chroma.from_documents(
+        documents,
+        embedding=HuggingFaceEmbeddings(model_name=embeddings_model_name),
+        persist_directory=persist_directory
+    )
+else:
+    db_books = Chroma(
+        persist_directory=persist_directory,
+        embedding_function=HuggingFaceEmbeddings(model_name=embeddings_model_name)
+    )
 
 def retrieve_semantic_recommendations(
         query: str,
@@ -67,7 +83,7 @@ def recommend_books(
         truncated_desc_split = description.split()
         truncated_description = " ".join(truncated_desc_split[:30]) + "..."
 
-        authors_split = row["authors"].split(";")
+        authors_split = str(row["authors"]).split(";") if pd.notna(row["authors"]) else []
         if len(authors_split) == 2:
             authors_str = f"{authors_split[0]} and {authors_split[1]}"
         elif len(authors_split) > 2:
@@ -82,7 +98,7 @@ def recommend_books(
 categories = ["All"] + sorted(books["simple_categories"].unique())
 tones = ["All"] + ["Happy", "Surprising", "Angry", "Suspenseful", "Sad"]
 
-with gr.Blocks(theme = gr.themes.Glass()) as dashboard:
+with gr.Blocks(theme = gr.themes.Citrus(),fill_width=True) as dashboard:
     gr.Markdown("# Semantic Book recommender")
 
     with gr.Row():
